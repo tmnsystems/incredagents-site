@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IncredAgents — Split Test Dashboard</title>
+<style>
+:root {
+  --bg: #0a0a12; --surface: #131320; --border: #252540; --text: #eaeaef;
+  --muted: #8888a8; --accent: #7c5cfc; --green: #34d399; --orange: #f59e0b;
+  --blue: #3b82f6; --red: #ef4444; --radius: 12px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; line-height: 1.5; }
+.container { max-width: 1000px; margin: 0 auto; padding: 40px 24px; }
+h1 { font-size: 28px; font-weight: 700; letter-spacing: -1px; margin-bottom: 4px; }
+h1 span { background: linear-gradient(135deg, var(--accent), #b794ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.sub { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+.summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
+.summary-card .val { font-size: 36px; font-weight: 800; letter-spacing: -1px; }
+.summary-card .lbl { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+.variant-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 32px; }
+@media (max-width: 700px) { .variant-grid { grid-template-columns: repeat(2, 1fr); } }
+.variant-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; text-align: center; }
+.variant-card.a { border-top: 3px solid var(--accent); }
+.variant-card.b { border-top: 3px solid var(--green); }
+.variant-card.c { border-top: 3px solid var(--orange); }
+.variant-card.d { border-top: 3px solid var(--blue); }
+.variant-card .vname { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+.variant-card .voffer { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
+.variant-card .stat-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 12px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.variant-card .stat-row .sr { font-weight: 600; }
+.bar-row { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.bar-label { width: 80px; text-align: right; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.bar-track { flex: 1; background: var(--border); height: 28px; border-radius: 6px; overflow: hidden; position: relative; }
+.bar-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 10px; font-size: 12px; font-weight: 700; min-width: 30px; transition: width 0.3s; }
+.bar-fill.a { background: var(--accent); }
+.bar-fill.b { background: var(--green); }
+.bar-fill.c { background: var(--orange); }
+.bar-fill.d { background: var(--blue); }
+.bar-val { margin-left: 8px; font-size: 12px; color: var(--muted); flex-shrink: 0; width: 70px; }
+.actions { display: flex; gap: 12px; margin-bottom: 40px; }
+.btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; font-size: 13px; cursor: pointer; transition: opacity 0.2s; }
+.btn:hover { opacity: 0.8; }
+.btn-purple { background: var(--accent); color: #fff; }
+.btn-red { background: transparent; border: 1px solid var(--red); color: var(--red); }
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+.empty-state { text-align: center; padding: 60px; color: var(--muted); }
+.empty-state .big { font-size: 48px; margin-bottom: 12px; }
+.footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 20px; }
+.winner { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 4px; }
+.winner-rev { background: rgba(52,211,153,0.15); color: var(--green); }
+.winner-conv { background: rgba(124,92,252,0.15); color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Split Test <span>Dashboard</span></h1>
+  <p class="sub">Real-time A/B/C/D test results. Auto-refresh every 30s. <span id="refresh-countdown">30</span>s</p>
+
+  <div id="empty-state" class="empty-state"><div class="big">No data yet</div><p>Traffic will appear here once visitors hit the split test router at /split-test</p></div>
+
+  <div id="dashboard" style="display:none">
+    <div class="summary-grid" id="summary"></div>
+    <div class="variant-grid" id="variants"></div>
+    <h3 style="margin-bottom:12px">Conversion Rate by Variant</h3>
+    <div id="conv-bars"></div>
+    <h3 style="margin-bottom:12px;margin-top:24px">Est. Revenue per 100 Visitors</h3>
+    <div id="rev-bars"></div>
+    <h3 style="margin-bottom:8px;margin-top:24px">Captured Leads</h3>
+    <div id="lead-stats" style="font-size:12px;color:var(--muted)"></div>
+  </div>
+
+  <div class="actions" style="margin-top:28px">
+    <button class="btn btn-purple" onclick="refresh()">Refresh Now</button>
+    <button class="btn btn-outline" id="btn-auto" onclick="toggleAuto()">Auto-Refresh: ON</button>
+    <button class="btn btn-red" onclick="resetData()">Reset All Data</button>
+  </div>
+  <div class="footer" id="footer-info">Reading from localStorage</div>
+</div>
+
+<script>
+var PRICES = { a: 497, b: 497, c: 1497, d: 250 };
+var NAMES = { a: 'A: $497 One-Time', b: 'B: Free 7-Day Trial', c: 'C: Premium Bundle', d: 'D: Pay-Per-Appt' };
+var autoRefresh = true;
+var countdown = 30;
+
+function getData() {
+  try { return JSON.parse(localStorage.getItem('ia_stats') || '{}'); } catch(e) { return {}; }
+}
+
+function getLeads() {
+  try { return JSON.parse(localStorage.getItem('ia_leads') || '[]'); } catch(e) { return []; }
+}
+
+function render() {
+  var d = getData();
+  var variants = ['a','b','c','d'];
+  var totalImp = 0, totalClicks = 0, totalRev = 0;
+  var hasData = false;
+
+  variants.forEach(function(v) {
+    var vd = d[v] || {};
+    var imp = vd.impressions || 0;
+    var clk = vd.clicks || 0;
+    if (imp > 0 || clk > 0) hasData = true;
+    totalImp += imp;
+    totalClicks += clk;
+    totalRev += clk * (PRICES[v] || 0);
+  });
+
+  if (!hasData) {
+    document.getElementById('empty-state').style.display = 'block';
+    document.getElementById('dashboard').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+
+  var overallRate = totalImp > 0 ? ((totalClicks / totalImp) * 100).toFixed(1) : '0.0';
+
+  document.getElementById('summary').innerHTML =
+    '<div class="summary-card"><div class="val">' + totalImp + '</div><div class="lbl">Total Visitors</div></div>' +
+    '<div class="summary-card"><div class="val">' + totalClicks + '</div><div class="lbl">CTA Clicks</div></div>' +
+    '<div class="summary-card"><div class="val">' + overallRate + '%</div><div class="lbl">Overall Conv. Rate</div></div>' +
+    '<div class="summary-card"><div class="val">$' + totalRev.toLocaleString() + '</div><div class="lbl">Est. Total Revenue</div></div>';
+
+  var variantHTML = '';
+  var convBarsHTML = '';
+  var revBarsHTML = '';
+  var maxConv = 0, maxRev = 0;
+  var per100 = {};
+
+  variants.forEach(function(v) {
+    var vd = d[v] || {};
+    var imp = vd.impressions || 0;
+    var clk = vd.clicks || 0;
+    var lds = vd.leads || 0;
+    var rate = imp > 0 ? ((clk / imp) * 100).toFixed(1) : '0.0';
+    var rev = clk * (PRICES[v] || 0);
+    var r100 = imp > 0 ? Math.round((rev / imp) * 100) : 0;
+    per100[v] = r100;
+    maxConv = Math.max(maxConv, parseFloat(rate));
+    maxRev = Math.max(maxRev, r100);
+
+    variantHTML +=
+      '<div class="variant-card ' + v + '">' +
+      '<div class="vname">Variant ' + v.toUpperCase() + '</div>' +
+      '<div class="voffer">' + NAMES[v] + '</div>' +
+      '<div class="stat-row"><span>Visitors</span><span class="sr">' + imp + '</span></div>' +
+      '<div class="stat-row"><span>Clicks</span><span class="sr">' + clk + '</span></div>' +
+      '<div class="stat-row"><span>Conv. Rate</span><span class="sr">' + rate + '%</span></div>' +
+      '<div class="stat-row"><span>Leads</span><span class="sr">' + lds + '</span></div>' +
+      '<div class="stat-row"><span>Revenue</span><span class="sr">$' + rev.toLocaleString() + '</span></div>' +
+      '<div class="stat-row"><span style="color:var(--green)">Rev/100 visitors</span><span class="sr" style="color:var(--green)">$' + r100 + '</span></div>' +
+      '</div>';
+  });
+
+  var convWinner = '', revWinner = '';
+  variants.forEach(function(v) {
+    var vd = d[v] || {};
+    var imp = vd.impressions || 0;
+    var clk = vd.clicks || 0;
+    var rate = imp > 0 ? ((clk / imp) * 100).toFixed(1) : '0.0';
+    var pct = maxConv > 0 ? (parseFloat(rate) / maxConv * 100) : 0;
+    if (parseFloat(rate) === maxConv && maxConv > 0) convWinner = v;
+    convBarsHTML +=
+      '<div class="bar-row"><div class="bar-label">' + v.toUpperCase() + '</div><div class="bar-track"><div class="bar-fill ' + v + '" style="width:' + pct + '%">' + (pct>18?rate+'%':'') + '</div></div><div class="bar-val">' + rate + '%</div></div>';
+  });
+
+  variants.forEach(function(v) {
+    var r100 = per100[v] || 0;
+    var pct = maxRev > 0 ? (r100 / maxRev * 100) : 0;
+    if (r100 === maxRev && maxRev > 0) revWinner = v;
+    revBarsHTML +=
+      '<div class="bar-row"><div class="bar-label">' + v.toUpperCase() + '</div><div class="bar-track"><div class="bar-fill ' + v + '" style="width:' + pct + '%">' + (pct>18?'$'+r100:'') + '</div></div><div class="bar-val">$' + r100 + '</div></div>';
+  });
+
+  document.getElementById('variants').innerHTML = variantHTML;
+  document.getElementById('conv-bars').innerHTML = convBarsHTML;
+  document.getElementById('rev-bars').innerHTML = revBarsHTML;
+
+  var leads = getLeads();
+  document.getElementById('lead-stats').innerHTML = leads.length > 0 ?
+    leads.slice(-5).reverse().map(function(l){
+      return '&#8226; ' + l.name + ' (' + l.industry + ') &mdash; ' + (l.offer==='a'?'$497':l.offer==='b'?'Trial':l.offer==='c'?'Premium':'Pay-Per-Appt') + ' &mdash; ' + new Date(l.timestamp).toLocaleDateString();
+    }).join('<br>') : 'No leads captured yet.';
+
+  document.getElementById('footer-info').textContent =
+    'localStorage | Updated: ' + new Date().toLocaleTimeString();
+}
+
+function refresh() { render(); countdown = 30; }
+function toggleAuto() { autoRefresh = !autoRefresh; document.getElementById('btn-auto').textContent = 'Auto-Refresh: ' + (autoRefresh ? 'ON' : 'OFF'); }
+
+function resetData() {
+  if (confirm('Delete ALL split test data? This cannot be undone.')) {
+    localStorage.removeItem('ia_stats');
+    localStorage.removeItem('ia_leads');
+    render();
+  }
+}
+
+setInterval(function() {
+  countdown--;
+  document.getElementById('refresh-countdown').textContent = countdown;
+  if (countdown <= 0) { if (autoRefresh) render(); countdown = 30; }
+}, 1000);
+
+render();
+</script>
+</body>
+</html>

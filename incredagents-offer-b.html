@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IncredAgents — Try an AI Agent Free for 7 Days</title>
+<style>
+:root {
+  --bg: #0a0a12; --surface: #131320; --border: #252540; --text: #eaeaef;
+  --muted: #8888a8; --accent: #34d399; --accent2: #28b77d; --green: #34d399;
+  --radius: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; line-height: 1.5; }
+.hero { min-height: 85vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; background: radial-gradient(ellipse at 50% 0%, rgba(52,211,153,0.12), transparent 70%); }
+.hero h1 { font-size: clamp(36px, 7vw, 64px); font-weight: 800; letter-spacing: -2px; line-height: 1.05; max-width: 800px; }
+.hero h1 span { background: linear-gradient(135deg, var(--accent), #6ee7b7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero .sub { font-size: 20px; color: var(--muted); margin-top: 20px; max-width: 550px; }
+.badge { display: inline-block; background: var(--accent); color: #000; font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+.offer-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; margin-top: 40px; max-width: 500px; width: 100%; }
+.offer-price { font-size: 56px; font-weight: 800; letter-spacing: -1px; color: var(--accent); }
+.offer-price small { font-size: 20px; font-weight: 400; color: var(--muted); }
+.offer-detail { color: var(--muted); font-size: 15px; margin-top: 12px; }
+.offer-list { list-style: none; margin-top: 20px; text-align: left; }
+.offer-list li { padding: 8px 0; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.offer-list li::before { content: '✓'; color: var(--green); font-weight: 700; }
+.guarantee-box { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); border-radius: 10px; padding: 16px; margin-top: 16px; text-align: center; }
+.guarantee-box strong { color: var(--green); font-size: 14px; }
+.guarantee-box p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.cta-btn { display: inline-block; background: var(--accent); color: #000; font-size: 18px; font-weight: 700; padding: 16px 40px; border-radius: 10px; text-decoration: none; margin-top: 24px; border: none; cursor: pointer; transition: background 0.2s; }
+.cta-btn:hover { background: var(--accent2); }
+.trust-bar { display: flex; gap: 30px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
+.trust-item { text-align: center; }
+.trust-item .num { font-size: 28px; font-weight: 800; color: var(--accent); }
+.trust-item .label { color: var(--muted); font-size: 12px; }
+.how-section { padding: 80px 24px; max-width: 800px; margin: 0 auto; }
+.how-section h2 { font-size: 28px; font-weight: 700; text-align: center; margin-bottom: 40px; }
+.how-row { display: flex; gap: 16px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
+.how-row .icon { font-size: 24px; width: 40px; text-align: center; flex-shrink: 0; }
+.how-row h4 { font-size: 15px; font-weight: 600; }
+.how-row p { color: var(--muted); font-size: 13px; }
+.demo-section { text-align: center; padding: 60px 24px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-top: 40px; }
+.demo-section h2 { font-size: 24px; margin-bottom: 12px; }
+.demo-section p { color: var(--muted); margin-bottom: 20px; }
+.demo-link { color: var(--accent); font-weight: 600; font-size: 16px; }
+.footer { text-align: center; padding: 40px 24px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+.footer a { color: var(--accent); }
+.variant-label { position: fixed; top: 10px; right: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: 11px; padding: 4px 10px; border-radius: 6px; z-index: 999; }
+</style>
+</head>
+<body>
+<div class="variant-label">Variant B &mdash; Free 7-Day Trial</div>
+
+<section class="hero">
+  <div class="badge">Zero Risk</div>
+  <h1>Put an AI Agent on<br>Your Site <span>Free for 7 Days</span></h1>
+  <p class="sub">If it doesn't book a single appointment you would've missed, I remove it. No charge, no obligation. Takes 10 minutes to set up.</p>
+
+  <div class="offer-card">
+    <div class="offer-price">$0 <small>for 7 days</small></div>
+    <div class="offer-detail">Then $97/month to keep it — or $497 one-time. Cancel anytime.</div>
+    <ul class="offer-list">
+      <li>Custom AI agent built for YOUR business</li>
+      <li>Installed on your website in 10 minutes</li>
+      <li>Handles real calls/messages during the trial</li>
+      <li>No credit card required to start</li>
+      <li>If it doesn't perform, I remove it — no hard feelings</li>
+    </ul>
+    <div class="guarantee-box">
+      <strong>It Books or It's Free</strong>
+      <p>If your AI agent doesn't book a single appointment during the trial, you don't pay a cent. I remove it and we part as friends.</p>
+    </div>
+    <a href="/demo" class="cta-btn" onclick="trackClick('b')">Start Your Free Trial →</a>
+  </div>
+
+  <div class="trust-bar">
+    <div class="trust-item"><div class="num">40+</div><div class="label">Agent Templates</div></div>
+    <div class="trust-item"><div class="num">10min</div><div class="label">Setup Time</div></div>
+    <div class="trust-item"><div class="num">24/7</div><div class="label">Coverage</div></div>
+    <div class="trust-item"><div class="num">$0</div><div class="label">Upfront Cost</div></div>
+  </div>
+</section>
+
+<section class="how-section">
+  <h2>How the Free Trial Works</h2>
+  <div class="how-row"><div class="icon">1</div><div><h4>You pick your AI agent type</h4><p>Chatbot for your website, voice AI for your phones, or booking engine for your calendar.</p></div></div>
+  <div class="how-row"><div class="icon">2</div><div><h4>I customize it in 10 minutes</h4><p>Your brand colors, your services, your booking flow. Live on your site same day.</p></div></div>
+  <div class="how-row"><div class="icon">3</div><div><h4>It runs for 7 days — handles real traffic</h4><p>Answers questions, qualifies leads, books appointments. You watch the results in real time.</p></div></div>
+  <div class="how-row"><div class="icon">4</div><div><h4>Day 8: Keep it or I remove it</h4><p>If it booked appointments: $97/mo or $497 lifetime. If not: I remove it, you owe nothing.</p></div></div>
+</section>
+
+<section class="demo-section">
+  <h2>See what your free trial looks like</h2>
+  <p>This is the exact AI agent you'll have on your site. Try it now.</p>
+  <a class="demo-link" href="/demo">Open Live Demo →</a>
+</section>
+
+<footer class="footer">
+  IncredAgents — Try before you buy. Zero risk.<br>
+  <a href="/demo">Live Demo</a> &middot; <a href="mailto:tinamariesystems@gmail.com">Contact</a>
+</footer>
+
+<script>
+function trackClick(v) {
+  var t = {};
+  try { t = JSON.parse(localStorage.getItem('ia_stats')||'{}'); } catch(e){}
+  if (!t[v]) t[v] = { impressions: 0, clicks: 0 };
+  t[v].clicks++;
+  try { localStorage.setItem('ia_stats', JSON.stringify(t)); } catch(e){}
+}
+</script>
+</body>
+</html>

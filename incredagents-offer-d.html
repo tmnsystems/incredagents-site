@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IncredAgents — Pay Per Appointment. Zero Upfront Cost.</title>
+<style>
+:root {
+  --bg: #0a0a12; --surface: #131320; --border: #252540; --text: #eaeaef;
+  --muted: #8888a8; --accent: #3b82f6; --accent2: #2563eb; --green: #34d399;
+  --radius: 14px;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; line-height: 1.5; }
+.hero { min-height: 85vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; background: radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.1), transparent 70%); }
+.hero h1 { font-size: clamp(32px, 6vw, 56px); font-weight: 800; letter-spacing: -2px; line-height: 1.05; max-width: 800px; }
+.hero h1 span { background: linear-gradient(135deg, var(--accent), #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hero .sub { font-size: 20px; color: var(--muted); margin-top: 20px; max-width: 550px; }
+.badge { display: inline-block; background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+.offer-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 32px; margin-top: 40px; max-width: 500px; width: 100%; }
+.offer-price { font-size: 56px; font-weight: 800; letter-spacing: -1px; color: var(--accent); }
+.offer-price small { font-size: 18px; font-weight: 400; color: var(--muted); display: block; margin-top: 4px; }
+.offer-detail { color: var(--muted); font-size: 15px; margin-top: 12px; }
+.offer-list { list-style: none; margin-top: 20px; text-align: left; }
+.offer-list li { padding: 8px 0; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.offer-list li::before { content: '✓'; color: var(--green); font-weight: 700; }
+.math-box { background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.15); border-radius: 10px; padding: 14px; margin-top: 16px; font-size: 13px; color: var(--muted); text-align: left; }
+.math-box span { color: var(--accent); font-weight: 600; }
+.guarantee-box { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); border-radius: 10px; padding: 16px; margin-top: 16px; text-align: center; }
+.guarantee-box strong { color: var(--green); font-size: 14px; }
+.guarantee-box p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+.cta-btn { display: inline-block; background: var(--accent); color: #fff; font-size: 18px; font-weight: 700; padding: 16px 40px; border-radius: 10px; text-decoration: none; margin-top: 24px; border: none; cursor: pointer; transition: background 0.2s; }
+.cta-btn:hover { background: var(--accent2); }
+.why-section { padding: 80px 24px; max-width: 700px; margin: 0 auto; }
+.why-section h2 { font-size: 28px; font-weight: 700; text-align: center; margin-bottom: 32px; }
+.why-item { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
+.why-item .num { color: var(--accent); font-weight: 800; font-size: 18px; flex-shrink: 0; width: 28px; }
+.why-item h4 { font-size: 15px; font-weight: 600; }
+.why-item p { color: var(--muted); font-size: 13px; }
+.demo-section { text-align: center; padding: 60px 24px; background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.demo-section h2 { font-size: 24px; margin-bottom: 12px; }
+.demo-section p { color: var(--muted); margin-bottom: 20px; }
+.demo-link { color: var(--accent); font-weight: 600; font-size: 16px; }
+.footer { text-align: center; padding: 40px 24px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+.footer a { color: var(--accent); }
+.variant-label { position: fixed; top: 10px; right: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-size: 11px; padding: 4px 10px; border-radius: 6px; z-index: 999; }
+</style>
+</head>
+<body>
+<div class="variant-label">Variant D &mdash; Pay-Per-Appointment</div>
+
+<section class="hero">
+  <div class="badge">No Upfront Cost</div>
+  <h1>We Don't Get Paid<br>Unless <span>You Get Booked</span></h1>
+  <p class="sub">We build and deploy your AI agent at zero cost. You pay $25 only when it books a qualified appointment that shows up.</p>
+
+  <div class="offer-card">
+    <div class="offer-price">$0 <small>setup + $25 per appointment booked</small></div>
+    <div class="offer-detail">No appointments = no bill. Ever. Our incentives are 100% aligned with yours.</div>
+    <ul class="offer-list">
+      <li>Full AI agent — built, deployed, and maintained</li>
+      <li>Website chatbot + optional voice AI</li>
+      <li>$25 per qualified appointment that shows up</li>
+      <li>No setup fee, no monthly minimum</li>
+      <li>30-day trial: after that, option to switch to $197/mo unlimited</li>
+    </ul>
+    <div class="math-box">
+      <strong>Your math:</strong><br>
+      Medspa: 1 appointment = <span>$300-800 revenue</span>. You pay us <span>$25</span>.<br>
+      Lawyer: 1 consult = <span>$500-2,500</span>. You pay us <span>$25</span>.<br>
+      Dentist: 1 new patient = <span>$200-500</span>. You pay us <span>$25</span>.<br>
+      <strong>You're always cash-flow positive on every appointment.</strong>
+    </div>
+    <div class="guarantee-box">
+      <strong>Zero Risk Guarantee</strong>
+      <p>No appointments = no bill. If our AI agent doesn't perform, you've lost nothing. We only succeed when you succeed.</p>
+    </div>
+    <a href="/demo" class="cta-btn" onclick="trackClick('d')">See the AI Agent That Books →</a>
+  </div>
+</section>
+
+<section class="why-section">
+  <h2>Why This Offer Exists</h2>
+  <div class="why-item"><div class="num">1</div><div><h4>Agencies have burned you before</h4><p>You paid $5K for a chatbot that doesn't work. We don't get paid unless ours does. Simple.</p></div></div>
+  <div class="why-item"><div class="num">2</div><div><h4>You shouldn't pay for promises</h4><p>Anyone can promise AI magic. We're the only ones who bet our revenue on results.</p></div></div>
+  <div class="why-item"><div class="num">3</div><div><h4>Our interests are identical</h4><p>If your agent doesn't book appointments, we both lose. So we make damn sure it books appointments.</p></div></div>
+  <div class="why-item"><div class="num">4</div><div><h4>Switch anytime to unlimited</h4><p>Once you trust the system, switch to $197/mo unlimited. If you're doing 8+ appointments/month, the math favors the flat rate.</p></div></div>
+</section>
+
+<section class="demo-section">
+  <h2>Watch it book a real appointment</h2>
+  <p>This is what your $25/appointment looks like. Zero setup. Zero risk.</p>
+  <a class="demo-link" href="/demo">Open Live Demo →</a>
+</section>
+
+<footer class="footer">
+  IncredAgents — We eat our own cooking. You only pay for results.<br>
+  <a href="/demo">Live Demo</a> &middot; <a href="mailto:tinamariesystems@gmail.com">Contact</a>
+</footer>
+
+<script>
+function trackClick(v) {
+  var t = {};
+  try { t = JSON.parse(localStorage.getItem('ia_stats')||'{}'); } catch(e){}
+  if (!t[v]) t[v] = { impressions: 0, clicks: 0 };
+  t[v].clicks++;
+  try { localStorage.setItem('ia_stats', JSON.stringify(t)); } catch(e){}
+}
+</script>
+</body>
+</html>

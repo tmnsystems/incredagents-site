@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IncredAgents — E-Commerce AI Support Agent Demo</title>
+<style>
+:root {
+  --bg: #0f0f14;
+  --surface: #1a1a24;
+  --surface2: #222232;
+  --text: #e8e8ed;
+  --muted: #8888a0;
+  --accent: #7c5cfc;
+  --accent-glow: #9d85ff;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --border: #2a2a3a;
+  --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.logo span { color: var(--accent); }
+
+.badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  flex: 1;
+  gap: 0;
+  max-height: calc(100vh - 65px);
+}
+
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+}
+
+.chat-header {
+  padding: 14px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.message {
+  display: flex;
+  gap: 10px;
+  max-width: 85%;
+}
+
+.message.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message.agent {
+  align-self: flex-start;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.message.agent .avatar {
+  background: var(--accent);
+  color: #fff;
+}
+
+.message.user .avatar {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.message.user .bubble {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.message.agent .bubble {
+  background: var(--surface);
+}
+
+.tool-use {
+  margin-top: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+}
+
+.tool-use .tool-name {
+  color: var(--amber);
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tool-use .tool-name::before {
+  content: '\1F527';
+  font-size: 11px;
+}
+
+.tool-use .tool-params {
+  color: var(--muted);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 11px;
+}
+
+.tool-use .tool-result {
+  color: var(--green);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.chat-input-area {
+  padding: 16px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input-row input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+
+.chat-input-row input:focus {
+  border-color: var(--accent);
+}
+
+.chat-input-row button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sidebar {
+  background: var(--surface);
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.stat-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.stat-card .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.stat-card .stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.stat-card.green .stat-value { color: var(--green); }
+.stat-card.purple .stat-value { color: var(--accent-glow); }
+.stat-card.amber .stat-value { color: var(--amber); }
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.activity-dot.green { background: var(--green); }
+.activity-dot.amber { background: var(--amber); }
+
+.activity-time {
+  color: var(--muted);
+  font-size: 11px;
+  margin-left: auto;
+}
+
+.cta-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, var(--accent), #5b3fd4);
+  padding: 12px 24px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 20;
+  display: none;
+}
+
+.cta-banner a {
+  color: #fff;
+  text-decoration: underline;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Incred<span>Agents</span></div>
+  <div class="badge">LIVE DEMO</div>
+</div>
+
+<div class="main">
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="status-dot"></div>
+      AI E-Commerce Support Agent — shopzen.com
+    </div>
+
+    <div class="chat-messages" id="chat"></div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <input type="text" id="userInput" placeholder="Ask about your order, returns, or product recommendations..." autofocus>
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div>
+      <h3>Agent Stats</h3>
+      <div class="stat-card green">
+        <div class="stat-value">1,842</div>
+        <div class="stat-label">Orders processed (this month)</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="stat-card purple">
+        <div class="stat-value">96%</div>
+        <div class="stat-label">CSAT score (customer satisfaction)</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="stat-card amber">
+        <div class="stat-value">$12.4k</div>
+        <div class="stat-label">Revenue recovered (abandoned carts)</div>
+      </div>
+    </div>
+
+    <div>
+      <h3>Live Activity</h3>
+      <div class="activity-list">
+        <div class="activity-item">
+          <div class="activity-dot green"></div>
+          <span>Return processed — Order #88291</span>
+          <span class="activity-time">1m ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot green"></div>
+          <span>Cart recovered — $247.50 saved</span>
+          <span class="activity-time">3m ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot amber"></div>
+          <span>Escalated — Payment dispute</span>
+          <span class="activity-time">6m ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot green"></div>
+          <span>Order placed via agent — $89.99</span>
+          <span class="activity-time">9m ago</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:auto; padding-top:16px; border-top:1px solid var(--border);">
+      <p style="font-size:12px; color:var(--muted);">
+        Powered by FreedomBot — 40+ tools, 3-tier memory.<br>
+        Customizable for your brand in 48 hours.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="cta-banner" id="cta">
+  Want this for YOUR business? <a href="#">$497. 48 hours. Done.</a>
+</div>
+
+<script>
+const DEMO_FLOW = [
+  {
+    type: 'user',
+    text: "Hey, I ordered a pair of running shoes last week. Can you check where it is?"
+  },
+  {
+    type: 'agent',
+    text: "Of course! Let me look up your order right away. What's the email on your order?",
+    tool: {
+      name: 'lookup_order',
+      params: '{ "email": "james.wilson@email.com" }',
+      result: 'Found 2 orders. Most recent: #88291 — Nike Air Zoom Pegasus, $129.99. Status: In Transit. ETA: May 15.'
+    }
+  },
+  {
+    type: 'user',
+    text: "james.wilson@email.com — it's the Nike Air Zoom ones."
+  },
+  {
+    type: 'agent',
+    text: "Found it! Order #88291 — Nike Air Zoom Pegasus, size 10.5. It shipped out on May 9 and is currently in transit. Estimated delivery is this Thursday, May 15.\n\nI can see the tracking shows it just left the Denver distribution center this morning. You should receive a delivery confirmation email soon.\n\nIs there anything else I can help with?",
+    tool: {
+      name: 'lookup_order',
+      params: '{ "email": "james.wilson@email.com", "order_id": "88291" }',
+      result: 'Order #88291 — Status: In Transit (Denver, CO). Carrier: UPS Ground. Tracking: 1Z999AA10123456784. ETA: 2026-05-15.'
+    }
+  },
+  {
+    type: 'user',
+    text: "Thanks! Actually, I also need to return a jacket I bought. I think the size is wrong."
+  },
+  {
+    type: 'agent',
+    text: "No problem at all. Let me pull up your previous order and start a return for you.",
+    tool: {
+      name: 'process_return',
+      params: '{ "email": "james.wilson@email.com", "product": "jacket", "reason": "wrong_size" }',
+      result: 'Found: Order #87902 — North Face Apex Jacket, $149.99 (purchased Apr 28). Eligible for return. Return window: 30 days. Label generated.'
+    }
+  },
+  {
+    type: 'agent',
+    text: "Found it — the North Face Apex Jacket from Order #87902. It's still within the 30-day return window so you're all set.\n\nI've generated a prepaid return label for you. You'll receive it at james.wilson@email.com within the next few minutes. Just drop it at any UPS location.\n\nWould you like me to help you exchange it for a different size, or are you looking for something else?"
+  },
+  {
+    type: 'user',
+    text: "Yeah, what size should I get? I usually wear a large but this one felt tight."
+  },
+  {
+    type: 'agent',
+    text: "Let me check what's in stock and recommend the best fit for you.",
+    tool: {
+      name: 'check_inventory',
+      params: '{ "product": "North Face Apex Jacket", "sizes": ["L", "XL"] }',
+      result: 'L — 3 in stock. XL — 7 in stock. Customer reviews suggest this style runs 1/2 size small — 78% of buyers recommend sizing up.'
+    }
+  },
+  {
+    type: 'agent',
+    text: "Good news — both sizes are in stock. Based on customer reviews, this jacket runs about a half-size small. 78% of buyers recommend going up one size. I'd suggest the XL.\n\nBy the way, since you're into running gear, we just got the new Nike Vaporfly 3 in stock. Customers who bought the Pegasus also love them for race day. Want me to set aside an XL jacket and add anything else?",
+    tool: {
+      name: 'recommend_products',
+      params: '{ "customer_id": "cust_44291", "category": "running", "purchase_history": ["Nike Air Zoom Pegasus"] }',
+      result: 'Top recommendation: Nike Vaporfly 3 ($259.99) — 4.8 stars, 2,341 reviews. Also popular: Brooks Glycerin 21 ($159.99), Hoka Clifton 10 ($144.99).'
+    }
+  },
+  {
+    type: 'user',
+    text: "Wow, you're good. Go ahead and do the XL exchange for the jacket. I'll think about the Vaporflys."
+  },
+  {
+    type: 'agent',
+    text: "Done and done! Here's your summary:\n\n🔄 Exchange initiated: North Face Apex Jacket, L → XL (Order #87902)\n📦 Return label emailed to james.wilson@email.com\n📬 New jacket ships as soon as the return is scanned by UPS\n\n📦 Order #88291 — Nike Air Zoom Pegasus arriving May 15\n\nI'll keep the Vaporfly 3s on your radar — if you change your mind, just say the word. Anything else I can help with today, James?"
+  }
+];
+
+let step = 0;
+const chat = document.getElementById('chat');
+const input = document.getElementById('userInput');
+const cta = document.getElementById('cta');
+
+function addMessage(msg) {
+  const div = document.createElement('div');
+  div.className = `message ${msg.type}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = msg.type === 'agent' ? 'IA' : 'J';
+
+  const wrapper = document.createElement('div');
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = msg.text.replace(/\n/g, '<br>');
+
+  wrapper.appendChild(bubble);
+
+  if (msg.tool) {
+    const toolDiv = document.createElement('div');
+    toolDiv.className = 'tool-use';
+    toolDiv.innerHTML = `
+      <div class="tool-name">${msg.tool.name}</div>
+      <div class="tool-params">${msg.tool.params}</div>
+      <div class="tool-result">→ ${msg.tool.result}</div>
+    `;
+    wrapper.appendChild(toolDiv);
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(wrapper);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function sendMessage() {
+  const text = input.value.trim();
+  if (!text || step >= DEMO_FLOW.length) return;
+  input.value = '';
+
+  const userMsg = { type: 'user', text };
+  addMessage(userMsg);
+
+  if (step < DEMO_FLOW.length) {
+    const next = DEMO_FLOW[step];
+    setTimeout(() => {
+      addMessage(next);
+      step++;
+      if (step >= DEMO_FLOW.length) {
+        cta.style.display = 'block';
+      }
+    }, 800 + Math.random() * 600);
+  }
+}
+
+setTimeout(() => {
+  input.placeholder = 'Try typing: "Hey, I ordered a pair of running shoes last week. Can you check where it is?"';
+}, 500);
+
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+console.log('💡 Try typing: "Hey, I ordered a pair of running shoes last week. Can you check where it is?"');
+console.log('🔧 Watch the agent use tools: lookup_order → process_return → check_inventory → recommend_products');
+console.log('📊 Dashboard updates in real-time on the right panel');
+</script>
+
+</body>
+</html>

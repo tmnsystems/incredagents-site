@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IncredAgents — Restaurant AI Concierge Demo</title>
+<style>
+:root {
+  --bg: #0f0f14;
+  --surface: #1a1a24;
+  --surface2: #222232;
+  --text: #e8e8ed;
+  --muted: #8888a0;
+  --accent: #7c5cfc;
+  --accent-glow: #9d85ff;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --border: #2a2a3a;
+  --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.logo span { color: var(--accent); }
+
+.badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
+.main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  flex: 1;
+  gap: 0;
+  max-height: calc(100vh - 65px);
+}
+
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+}
+
+.chat-header {
+  padding: 14px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.message {
+  display: flex;
+  gap: 10px;
+  max-width: 85%;
+}
+
+.message.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message.agent {
+  align-self: flex-start;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.message.agent .avatar {
+  background: var(--accent);
+  color: #fff;
+}
+
+.message.user .avatar {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.message.user .bubble {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.message.agent .bubble {
+  background: var(--surface);
+}
+
+.tool-use {
+  margin-top: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+}
+
+.tool-use .tool-name {
+  color: var(--amber);
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tool-use .tool-name::before {
+  content: '\1F527';
+  font-size: 11px;
+}
+
+.tool-use .tool-params {
+  color: var(--muted);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 11px;
+}
+
+.tool-use .tool-result {
+  color: var(--green);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.chat-input-area {
+  padding: 16px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input-row input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+
+.chat-input-row input:focus {
+  border-color: var(--accent);
+}
+
+.chat-input-row button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sidebar {
+  background: var(--surface);
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.stat-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.stat-card .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.stat-card .stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.stat-card.green .stat-value { color: var(--green); }
+.stat-card.purple .stat-value { color: var(--accent-glow); }
+.stat-card.amber .stat-value { color: var(--amber); }
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.activity-dot.green { background: var(--green); }
+.activity-dot.amber { background: var(--amber); }
+
+.activity-time {
+  color: var(--muted);
+  font-size: 11px;
+  margin-left: auto;
+}
+
+.cta-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, var(--accent), #5b3fd4);
+  padding: 12px 24px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 20;
+  display: none;
+}
+
+.cta-banner a {
+  color: #fff;
+  text-decoration: underline;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Incred<span>Agents</span></div>
+  <div class="badge">LIVE DEMO</div>
+</div>
+
+<div class="main">
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="status-dot"></div>
+      AI Restaurant Concierge — thevaultsteakhouse.com
+    </div>
+
+    <div class="chat-messages" id="chat"></div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <input type="text" id="userInput" placeholder="Ask about reservations, menu, dietary options..." autofocus>
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div>
+      <h3>Agent Stats</h3>
+      <div class="stat-card green">
+        <div class="stat-value">412</div>
+        <div class="stat-label">Reservations taken (this week)</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="stat-card purple">
+        <div class="stat-value">98%</div>
+        <div class="stat-label">Table fill rate (no empty slots)</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="stat-card amber">
+        <div class="stat-value">87</div>
+        <div class="stat-label">Special requests handled (today)</div>
+      </div>
+    </div>
+
+    <div>
+      <h3>Live Activity</h3>
+      <div class="activity-list">
+        <div class="activity-item">
+          <div class="activity-dot green"></div>
+          <span>Reservation booked — Party of 6, 7:30pm</span>
+          <span class="activity-time">1m ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot green"></div>
+          <span>Dietary menu sent — gluten-free options</span>
+          <span class="activity-time">4m ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot amber"></div>
+          <span>Escalated — Private event inquiry</span>
+          <span class="activity-time">7m ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot green"></div>
+          <span>Special request: anniversary table</span>
+          <span class="activity-time">10m ago</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:auto; padding-top:16px; border-top:1px solid var(--border);">
+      <p style="font-size:12px; color:var(--muted);">
+        Powered by FreedomBot — 40+ tools, 3-tier memory.<br>
+        Customizable for your brand in 48 hours.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="cta-banner" id="cta">
+  Want this for YOUR business? <a href="#">$497. 48 hours. Done.</a>
+</div>
+
+<script>
+const DEMO_FLOW = [
+  {
+    type: 'user',
+    text: "Hi, I'd like to make a reservation for Saturday evening — party of 4."
+  },
+  {
+    type: 'agent',
+    text: "Welcome to The Vault Steakhouse! I'd be happy to help with your Saturday reservation. Let me check what we have available for a party of 4.",
+    tool: {
+      name: 'check_table_availability',
+      params: '{ "date": "2026-05-16", "party_size": 4, "time_range": "17:00-22:00" }',
+      result: 'Available: 5:30pm (standard), 6:00pm (booth), 8:15pm (patio), 9:00pm (standard). High demand — 6:00pm booth likely to fill within the hour.'
+    }
+  },
+  {
+    type: 'user',
+    text: "The 6pm booth sounds great! But my wife is gluten-free — do you have options for her?"
+  },
+  {
+    type: 'agent',
+    text: "Great choice on the booth — those tend to book fast. And absolutely, let me pull up our gluten-free offerings.",
+    tool: {
+      name: 'check_dietary_menu',
+      params: '{ "restriction": "gluten-free", "menu": "dinner" }',
+      result: 'GF options found: 14 items including Dry-Aged Ribeye, Chilean Sea Bass, Truffle Risotto, Caesar Salad (no croutons), 3 desserts. All sauces made with GF alternatives available.'
+    }
+  },
+  {
+    type: 'user',
+    text: "That's perfect. She loves sea bass. Can we also request a table by the window? It's our anniversary."
+  },
+  {
+    type: 'agent',
+    text: "Happy anniversary! Let me lock in that booth and add your window request. We have a lovely corner booth by the floor-to-ceiling windows that would be perfect.",
+    tool: {
+      name: 'make_reservation',
+      params: '{ "date": "2026-05-16", "time": "18:00", "party_size": 4, "table_type": "booth", "name": "Michael Torres", "phone": "(555) 234-9876" }',
+      result: '✅ Confirmed! Reservation #VR-38471. Corner booth by window. Sat May 16, 6:00pm. Party of 4.'
+    }
+  },
+  {
+    type: 'agent',
+    text: "Your reservation is all set, Michael! Here's your summary:\n\n🥩 The Vault Steakhouse\n📅 Saturday, May 16th at 6:00 PM\n🪑 Corner booth by the window (anniversary seating)\n👥 Party of 4\n🍷 Reservation #VR-38471\n\nConfirmation has been sent to your phone. I've also added a note about:\n- Gluten-free menu preference for your wife\n- Anniversary celebration\n\nWe'll make sure to mark your table and have our sommelier recommend a celebratory wine pairing. Would you like me to add anything else?",
+    tool: {
+      name: 'special_requests',
+      params: '{ "reservation_id": "VR-38471", "requests": ["window_table", "anniversary_celebration", "gluten_free_guest", "sommelier_visit"] }',
+      result: 'All 4 special requests logged. Anniversary note added. Sommelier scheduled for table visit. GF flag activated.'
+    }
+  },
+  {
+    type: 'user',
+    text: "Thanks so much! Are kids welcome? We might bring our daughter."
+  },
+  {
+    type: 'agent',
+    text: "Absolutely, children are welcome at The Vault! We have a kids' menu with smaller portions of our classics — filet mignon sliders, mini mac & cheese with truffle, and grilled salmon. High chairs and booster seats are available.\n\nShould I update your reservation to party of 5, or shall we keep it at 4 for now?"
+  },
+  {
+    type: 'user',
+    text: "Keep it at 4 for now — we'll decide later. Thanks for being so helpful!"
+  },
+  {
+    type: 'agent',
+    text: "Sounds good, Michael! I'll keep it at 4. If you decide to bring your daughter, just text CONFIRM to the reservation number or reply here and I'll update it instantly.\n\nTo recap: Saturday May 16th, 6:00pm, corner booth, anniversary dinner at The Vault. We'll take great care of you.\n\n🥂 See you Saturday!"
+  }
+];
+
+let step = 0;
+const chat = document.getElementById('chat');
+const input = document.getElementById('userInput');
+const cta = document.getElementById('cta');
+
+function addMessage(msg) {
+  const div = document.createElement('div');
+  div.className = `message ${msg.type}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = msg.type === 'agent' ? 'IA' : 'M';
+
+  const wrapper = document.createElement('div');
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = msg.text.replace(/\n/g, '<br>');
+
+  wrapper.appendChild(bubble);
+
+  if (msg.tool) {
+    const toolDiv = document.createElement('div');
+    toolDiv.className = 'tool-use';
+    toolDiv.innerHTML = `
+      <div class="tool-name">${msg.tool.name}</div>
+      <div class="tool-params">${msg.tool.params}</div>
+      <div class="tool-result">→ ${msg.tool.result}</div>
+    `;
+    wrapper.appendChild(toolDiv);
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(wrapper);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function sendMessage() {
+  const text = input.value.trim();
+  if (!text || step >= DEMO_FLOW.length) return;
+  input.value = '';
+
+  const userMsg = { type: 'user', text };
+  addMessage(userMsg);
+
+  if (step < DEMO_FLOW.length) {
+    const next = DEMO_FLOW[step];
+    setTimeout(() => {
+      addMessage(next);
+      step++;
+      if (step >= DEMO_FLOW.length) {
+        cta.style.display = 'block';
+      }
+    }, 800 + Math.random() * 600);
+  }
+}
+
+setTimeout(() => {
+  input.placeholder = 'Try typing: "Hi, I\'d like to make a reservation for Saturday evening — party of 4."';
+}, 500);
+
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+console.log('💡 Try typing: "Hi, I\'d like to make a reservation for Saturday evening — party of 4."');
+console.log('🔧 Watch the agent use tools: check_table_availability → check_dietary_menu → make_reservation → special_requests');
+console.log('📊 Dashboard updates in real-time on the right panel');
+</script>
+
+</body>
+</html>

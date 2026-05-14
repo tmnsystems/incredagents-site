@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IncredAgents ROI Calculator</title>
+<style>
+  :root {
+    --bg: #0a0a12;
+    --surface: #131320;
+    --border: #252540;
+    --text: #eaeaef;
+    --accent: #7c5cfc;
+    --accent-glow: rgba(124, 92, 252, 0.25);
+    --green: #34d399;
+    --green-glow: rgba(52, 211, 153, 0.2);
+    --danger: #f87171;
+    --muted: #8888a0;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px 48px;
+  }
+
+  .calculator {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .header .badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    background: var(--accent-glow);
+    padding: 5px 14px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .header h1 {
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #fff;
+  }
+  .header .subtitle {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    margin-bottom: 16px;
+  }
+  .card-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  /* Form elements */
+  .field {
+    margin-bottom: 18px;
+  }
+  .field:last-child {
+    margin-bottom: 0;
+  }
+  .field label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .field .hint {
+    font-size: 0.72rem;
+    color: var(--muted);
+    float: right;
+  }
+
+  select, input[type="number"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    color: var(--text);
+    font-family: inherit;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238888a0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  select:focus, input[type="number"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    opacity: 1;
+    height: 30px;
+  }
+
+  /* Range slider */
+  .range-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--accent-glow);
+    transition: transform 0.15s;
+  }
+  input[type="range"]::-webkit-slider-thumb:active {
+    transform: scale(1.15);
+  }
+  .range-val {
+    min-width: 44px;
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  /* Toggle */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .toggle-label-text {
+    font-size: 0.85rem;
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+  .toggle-label-text.active {
+    color: #fff;
+    font-weight: 600;
+  }
+  .toggle-switch {
+    position: relative;
+    width: 52px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  .toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: var(--border);
+    border-radius: 28px;
+    transition: background 0.25s;
+  }
+  .toggle-slider::before {
+    content: "";
+    position: absolute;
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.25s;
+  }
+  input:checked + .toggle-slider {
+    background: var(--accent);
+  }
+  input:checked + .toggle-slider::before {
+    transform: translateX(24px);
+  }
+
+  /* Results area */
+  .results {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .stat {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .stat.full {
+    grid-column: 1 / -1;
+  }
+  .stat .stat-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .stat .stat-val {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .stat .stat-val.lost {
+    color: var(--danger);
+  }
+  .stat .stat-val.green {
+    color: var(--green);
+  }
+
+  /* Hero number - the big emotional sell */
+  .hero-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    text-align: center;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-stat::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, var(--green-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-stat .hero-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 2px;
+    position: relative;
+  }
+  .hero-stat .hero-val {
+    font-size: 2.8rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--green);
+    line-height: 1.1;
+    position: relative;
+  }
+  .hero-stat .hero-sub {
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-top: 4px;
+    position: relative;
+  }
+
+  /* Comparison cards */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .compare-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 12px;
+    text-align: center;
+    transition: border-color 0.25s;
+  }
+  .compare-card.winner {
+    border-color: var(--green);
+    box-shadow: 0 0 16px var(--green-glow);
+  }
+  .compare-card .cc-name {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .compare-card .cc-price {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+  }
+  .compare-card .cc-note {
+    font-size: 0.68rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .compare-card .cc-tag {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--green);
+    margin-top: 4px;
+  }
+
+  /* Savings banner */
+  .savings-banner {
+    background: linear-gradient(135deg, rgba(52, 211, 153, 0.12), rgba(52, 211, 153, 0.04));
+    border: 1px solid rgba(52, 211, 153, 0.25);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .savings-banner .sb-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+  }
+  .savings-banner .sb-val {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--green);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  /* ROI bar */
+  .roi-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .roi-row .roi-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .roi-row .roi-val {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  /* CTA */
+  .cta-wrap {
+    text-align: center;
+  }
+  .cta-btn {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 14px 32px;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: background 0.2s, box-shadow 0.2s;
+    letter-spacing: -0.01em;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .cta-btn:hover {
+    background: #9277fd;
+    box-shadow: 0 0 24px var(--accent-glow);
+  }
+  .cta-hint {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  /* Summary sentence */
+  .summary {
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .summary strong {
+    color: var(--green);
+  }
+
+  /* Mobile */
+  @media (max-width: 500px) {
+    .header h1 { font-size: 1.35rem; }
+    .results { grid-template-columns: 1fr; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .hero-stat .hero-val { font-size: 2.2rem; }
+    .savings-banner .sb-val { font-size: 1.5rem; }
+    .card { padding: 18px 14px; }
+    .roi-row { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="calculator">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge">ROI Calculator</div>
+    <h1>See What You're Leaving on the Table</h1>
+    <p class="subtitle">Every missed call is a missed sale. Let's put a number on it.</p>
+  </div>
+
+  <!-- Inputs Card -->
+  <div class="card">
+    <div class="card-label">Your Business</div>
+
+    <div class="field">
+      <label for="industry">Industry</label>
+      <select id="industry">
+        <option value="MedSpa">MedSpa</option>
+        <option value="Dental">Dental</option>
+        <option value="Legal">Legal</option>
+        <option value="Real Estate">Real Estate</option>
+        <option value="E-commerce">E-commerce</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="avgValue">Average Appointment / Revenue Value</label>
+      <input type="number" id="avgValue" min="1" max="100000" step="1" value="500">
+    </div>
+
+    <div class="field">
+      <label for="missedSlider">
+        Missed Calls / Messages Per Month
+        <span class="hint">Current close rate: <strong>0%</strong> — these are lost</span>
+      </label>
+      <div class="range-wrap">
+        <input type="range" id="missedSlider" min="0" max="100" value="20" step="1">
+        <span class="range-val" id="missedVal">20</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results">
+    <div class="stat">
+      <div class="stat-label">Monthly Revenue LOST</div>
+      <div class="stat-val lost" id="monthlyLost">$10,000</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Appointments Captured by AI</div>
+      <div class="stat-val green" id="captured">6</div>
+    </div>
+  </div>
+
+  <!-- Hero number -->
+  <div class="hero-stat">
+    <div class="hero-label">Annual Revenue You Could Recover</div>
+    <div class="hero-val" id="annualRecovered">$36,000</div>
+    <div class="hero-sub" id="roiSentence">That's a 31x return on your investment</div>
+  </div>
+
+  <!-- Summary sentence -->
+  <div class="summary" id="summarySentence">
+    You're losing <strong id="summaryLost">$120,000/yr</strong> to missed calls. An AI agent recovers <strong id="summaryRecovered">$36,000/yr</strong> of that — automatically.
+  </div>
+
+  <!-- Pricing toggle -->
+  <div class="toggle-row">
+    <span class="toggle-label-text active" id="tglMonthlyLabel">$97/mo</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="pricingToggle">
+      <span class="toggle-slider"></span>
+    </label>
+    <span class="toggle-label-text" id="tglOneTimeLabel">$497 one-time</span>
+  </div>
+
+  <!-- Cost Comparison -->
+  <div class="card">
+    <div class="card-label">Cost Comparison</div>
+    <div class="compare-grid">
+      <div class="compare-card winner" id="cardIncredAgents">
+        <div class="cc-name">IncredAgents AI</div>
+        <div class="cc-price" id="iaPrice">$1,164/yr</div>
+        <div class="cc-note">24/7, no breaks</div>
+        <div class="cc-tag">Best Value</div>
+      </div>
+      <div class="compare-card" id="cardAIReceptionist">
+        <div class="cc-name">AI Receptionist</div>
+        <div class="cc-price">$5,061/yr</div>
+        <div class="cc-note">Year 1 (then $3,564/yr)</div>
+      </div>
+      <div class="compare-card" id="cardHuman">
+        <div class="cc-name">Human Receptionist</div>
+        <div class="cc-price">$35,000/yr</div>
+        <div class="cc-note">Business hours only</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Savings Banner -->
+  <div class="savings-banner">
+    <div class="sb-label">You Save Every Year</div>
+    <div class="sb-val" id="savingsVal">$33,836/yr</div>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-wrap">
+    <a class="cta-btn" id="ctaBtn" href="/demo">Get This AI Agent for Your <span id="ctaIndustry">MedSpa</span> Business &rarr;</a>
+    <p class="cta-hint" id="ctaHint">30-day money-back guarantee. No risk.</p>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  "use strict";
+
+  // Industry presets
+  var presets = {
+    "MedSpa":      500,
+    "Dental":      350,
+    "Legal":       1500,
+    "Real Estate": 10000,
+    "E-commerce":  85,
+    "Other":       200
+  };
+
+  // DOM refs
+  var industryEl    = document.getElementById("industry");
+  var avgValueEl    = document.getElementById("avgValue");
+  var missedSlider  = document.getElementById("missedSlider");
+  var missedValEl   = document.getElementById("missedVal");
+  var pricingToggle = document.getElementById("pricingToggle");
+
+  var monthlyLostEl    = document.getElementById("monthlyLost");
+  var capturedEl       = document.getElementById("captured");
+  var annualRecoveredEl = document.getElementById("annualRecovered");
+  var roiSentenceEl    = document.getElementById("roiSentence");
+  var summaryLostEl    = document.getElementById("summaryLost");
+  var summaryRecoveredEl = document.getElementById("summaryRecovered");
+  var iaPriceEl        = document.getElementById("iaPrice");
+  var savingsValEl     = document.getElementById("savingsVal");
+  var ctaIndustryEl    = document.getElementById("ctaIndustry");
+
+  var tglMonthlyLabel  = document.getElementById("tglMonthlyLabel");
+  var tglOneTimeLabel  = document.getElementById("tglOneTimeLabel");
+
+  var cardIncredAgents  = document.getElementById("cardIncredAgents");
+  var cardAIReceptionist = document.getElementById("cardAIReceptionist");
+  var cardHuman         = document.getElementById("cardHuman");
+
+  // Constants
+  var AI_CONVERSION_RATE = 0.30;       // 30% capture rate
+  var HUMAN_COST         = 35000;      // $35,000/yr
+  var AI_RECEPTIONIST_Y1 = 5061;       // $5,061/yr first year
+  var AI_RECEPTIONIST_Y2 = 3564;       // $3,564/yr after
+  var MONTHLY_PRICE      = 97;         // $97/mo
+  var ONETIME_PRICE      = 497;        // $497 one-time
+
+  function fmtCurrency(n) {
+    if (n >= 1000) {
+      return "$" + (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + "K";
+    }
+    return "$" + Math.round(n).toLocaleString();
+  }
+
+  function fmtFullCurrency(n) {
+    return "$" + Math.round(n).toLocaleString();
+  }
+
+  function recalc() {
+    var industry     = industryEl.value;
+    var avgValue     = parseFloat(avgValueEl.value) || 0;
+    var missed       = parseInt(missedSlider.value, 10) || 0;
+    var isOneTime    = pricingToggle.checked;
+
+    // Monthly calculations
+    var monthlyLost     = missed * avgValue;
+    var capturedApps    = Math.round(missed * AI_CONVERSION_RATE);
+    var monthlyRecovered = capturedApps * avgValue;
+    var annualRecovered = monthlyRecovered * 12;
+
+    // IncredAgents annual cost
+    var iaAnnualCost = isOneTime ? ONETIME_PRICE : (MONTHLY_PRICE * 12);
+
+    // ROI multiple
+    var roiMultiple = iaAnnualCost > 0 ? (annualRecovered / iaAnnualCost) : 0;
+
+    // Savings vs human receptionist
+    var savings = HUMAN_COST - iaAnnualCost;
+    if (savings < 0) savings = 0;
+
+    // Update DOM
+    missedValEl.textContent = missed;
+    monthlyLostEl.textContent = fmtFullCurrency(monthlyLost);
+    capturedEl.textContent = capturedApps + " appts";
+    annualRecoveredEl.textContent = fmtFullCurrency(annualRecovered);
+
+    var roiStr = roiMultiple >= 1000
+      ? "That's a " + Math.round(roiMultiple).toLocaleString() + "x return on your investment"
+      : "That's a " + roiMultiple.toFixed(1) + "x return on your investment";
+    roiSentenceEl.textContent = roiStr;
+
+    summaryLostEl.textContent = fmtFullCurrency(monthlyLost * 12) + "/yr";
+    summaryRecoveredEl.textContent = fmtFullCurrency(annualRecovered) + "/yr";
+
+    iaPriceEl.textContent = isOneTime ? "$497 one-time" : "$1,164/yr";
+    savingsValEl.textContent = fmtFullCurrency(savings) + "/yr";
+
+    // Toggle labels
+    if (isOneTime) {
+      tglMonthlyLabel.classList.remove("active");
+      tglOneTimeLabel.classList.add("active");
+    } else {
+      tglMonthlyLabel.classList.add("active");
+      tglOneTimeLabel.classList.remove("active");
+    }
+
+    // Highlight winning card - IncredAgents always wins vs human
+    cardIncredAgents.classList.add("winner");
+    cardAIReceptionist.classList.remove("winner");
+    cardHuman.classList.remove("winner");
+
+    // Update CTA
+    ctaIndustryEl.textContent = industry;
+  }
+
+  // Industry change handler
+  industryEl.addEventListener("change", function() {
+    var newVal = presets[industryEl.value];
+    if (newVal !== undefined) {
+      avgValueEl.value = newVal;
+    }
+    recalc();
+  });
+
+  // Avg value input
+  avgValueEl.addEventListener("input", recalc);
+
+  // Missed calls slider
+  missedSlider.addEventListener("input", recalc);
+
+  // Pricing toggle
+  pricingToggle.addEventListener("change", recalc);
+
+  // Initial calc
+  recalc();
+})();
+</script>
+
+</body>
+</html>

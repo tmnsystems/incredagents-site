@@ -1,9 +1,23 @@
 {
   "rewrites": [
+    { "source": "/", "destination": "/incredagents-split-test-router.html" },
     { "source": "/demo", "destination": "/demo.html" },
     { "source": "/demo-medspa", "destination": "/demo-medspa.html" },
     { "source": "/demo-realestate", "destination": "/demo-realestate.html" },
     { "source": "/demo-dental", "destination": "/demo-dental.html" },
-    { "source": "/demo-legal", "destination": "/demo-legal.html" }
+    { "source": "/demo-legal", "destination": "/demo-legal.html" },
+    { "source": "/demo-ecommerce", "destination": "/incredagents-demo-ecommerce.html" },
+    { "source": "/demo-restaurant", "destination": "/incredagents-demo-restaurant.html" },
+    { "source": "/demo-saas", "destination": "/incredagents-demo-saas.html" },
+    { "source": "/offer-a", "destination": "/incredagents-offer-a.html" },
+    { "source": "/offer-b", "destination": "/incredagents-offer-b.html" },
+    { "source": "/offer-c", "destination": "/incredagents-offer-c.html" },
+    { "source": "/offer-d", "destination": "/incredagents-offer-d.html" },
+    { "source": "/split-test", "destination": "/incredagents-split-test-router.html" },
+    { "source": "/pricing", "destination": "/incredagents-pricing.html" },
+    { "source": "/contact", "destination": "/incredagents-contact.html" },
+    { "source": "/roi-calculator", "destination": "/incredagents-roi-calculator.html" },
+    { "source": "/stats", "destination": "/incredagents-stats-dashboard.html" },
+    { "source": "/landing", "destination": "/index.html" }
   ]
 }
