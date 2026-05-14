@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IncredAgents — AI Agent Demo</title>
+<style>
+:root {
+  --bg: #0f0f14;
+  --surface: #1a1a24;
+  --surface2: #222232;
+  --text: #e8e8ed;
+  --muted: #8888a0;
+  --accent: #7c5cfc;
+  --accent-glow: #9d85ff;
+  --green: #34d399;
+  --amber: #fbbf24;
+  --red: #f87171;
+  --border: #2a2a3a;
+  --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Header --- */
+.header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.logo span { color: var(--accent); }
+
+.badge {
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.3px;
+}
+
+/* --- Main Layout --- */
+.main {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  flex: 1;
+  gap: 0;
+  max-height: calc(100vh - 65px);
+}
+
+@media (max-width: 900px) {
+  .main { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+
+/* --- Chat Panel --- */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+}
+
+.chat-header {
+  padding: 14px 20px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.message {
+  display: flex;
+  gap: 10px;
+  max-width: 85%;
+}
+
+.message.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message.agent {
+  align-self: flex-start;
+}
+
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.message.agent .avatar {
+  background: var(--accent);
+  color: #fff;
+}
+
+.message.user .avatar {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.message.user .bubble {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.message.agent .bubble {
+  background: var(--surface);
+}
+
+.tool-use {
+  margin-top: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+}
+
+.tool-use .tool-name {
+  color: var(--amber);
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tool-use .tool-name::before {
+  content: '🔧';
+  font-size: 11px;
+}
+
+.tool-use .tool-params {
+  color: var(--muted);
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 11px;
+}
+
+.tool-use .tool-result {
+  color: var(--green);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* --- Chat Input --- */
+.chat-input-area {
+  padding: 16px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input-row input {
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+
+.chat-input-row input:focus {
+  border-color: var(--accent);
+}
+
+.chat-input-row button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* --- Sidebar / Dashboard --- */
+.sidebar {
+  background: var(--surface);
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.stat-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.stat-card .stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.stat-card .stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.stat-card.green .stat-value { color: var(--green); }
+.stat-card.purple .stat-value { color: var(--accent-glow); }
+.stat-card.amber .stat-value { color: var(--amber); }
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.activity-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.activity-dot.green { background: var(--green); }
+.activity-dot.amber { background: var(--amber); }
+
+.activity-time {
+  color: var(--muted);
+  font-size: 11px;
+  margin-left: auto;
+}
+
+/* --- CTA Banner --- */
+.cta-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, var(--accent), #5b3fd4);
+  padding: 12px 24px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 20;
+  display: none;
+}
+
+.cta-banner a {
+  color: #fff;
+  text-decoration: underline;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Incred<span>Agents</span></div>
+  <div class="badge">LIVE DEMO</div>
+</div>
+
+<div class="main">
+  <!-- Chat Panel -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <div class="status-dot"></div>
+      AI Customer Support Agent — medspa.example.com
+    </div>
+
+    <div class="chat-messages" id="chat">
+      <!-- Messages rendered by JS -->
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <input type="text" id="userInput" placeholder="Ask about appointments, services, pricing..." autofocus>
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Sidebar -->
+  <div class="sidebar">
+    <div>
+      <h3>Agent Stats</h3>
+      <div class="stat-card green">
+        <div class="stat-value">247</div>
+        <div class="stat-label">Conversations handled (this week)</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="stat-card purple">
+        <div class="stat-value">94%</div>
+        <div class="stat-label">Containment rate (no human needed)</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="stat-card amber">
+        <div class="stat-value">31</div>
+        <div class="stat-label">Appointments booked (today)</div>
+      </div>
+    </div>
+
+    <div>
+      <h3>Live Activity</h3>
+      <div class="activity-list">
+        <div class="activity-item">
+          <div class="activity-dot green"></div>
+          <span>Appointment booked — Botox consult</span>
+          <span class="activity-time">2m ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot green"></div>
+          <span>New patient intake completed</span>
+          <span class="activity-time">5m ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot amber"></div>
+          <span>Escalated to front desk — billing Q</span>
+          <span class="activity-time">8m ago</span>
+        </div>
+        <div class="activity-item">
+          <div class="activity-dot green"></div>
+          <span>Sent price list — HydraFacial</span>
+          <span class="activity-time">11m ago</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:auto; padding-top:16px; border-top:1px solid var(--border);">
+      <p style="font-size:12px; color:var(--muted);">
+        Powered by FreedomBot — 40+ tools, 3-tier memory.<br>
+        Customizable for your brand in 48 hours.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="cta-banner" id="cta">
+  Want this exact agent for YOUR business? <a href="#">Get it in 48 hours — $497</a>
+</div>
+
+<script>
+const DEMO_FLOW = [
+  {
+    type: 'user',
+    text: 'Hi, I want to book a Botox consultation for next week.'
+  },
+  {
+    type: 'agent',
+    text: "Absolutely! I'd be happy to help you schedule a Botox consultation. Let me check availability for next week.",
+    tool: {
+      name: 'check_calendar_availability',
+      params: '{ "service": "Botox Consultation", "date_range": "2026-05-18 to 2026-05-24", "provider": "Dr. Chen" }',
+      result: 'Found 4 available slots: Tue 5/19 10am, Wed 5/20 2pm, Thu 5/21 11am, Fri 5/22 9am'
+    }
+  },
+  {
+    type: 'user',
+    text: 'Wednesday at 2pm works for me!'
+  },
+  {
+    type: 'agent',
+    text: "Great choice. Before I book that, I'll need a few details. Are you a new or existing patient?",
+    tool: {
+      name: 'lookup_patient',
+      params: '{ "phone": "(555) 123-4567" }',
+      result: 'Existing patient found: Sarah M. — last visit 2026-03-15 (HydraFacial). Insurance: Aetna PPO.'
+    }
+  },
+  {
+    type: 'user',
+    text: 'Existing — I was there in March for a facial.'
+  },
+  {
+    type: 'agent',
+    text: "I found your record, Sarah! Your insurance is active. Botox consultations are covered at 80% with your Aetna PPO plan — your estimated copay is $45.\n\nLet me book Wednesday May 20th at 2:00 PM with Dr. Chen for you now.",
+    tool: {
+      name: 'book_appointment',
+      params: '{ "patient_id": "PT-2847", "provider": "Dr. Chen", "datetime": "2026-05-20T14:00:00", "service": "Botox Consultation", "location": "Main Clinic - Room 4" }',
+      result: '✅ Confirmed! Appointment ID: APT-11892. Confirmation email sent to s.miller@email.com.'
+    }
+  },
+  {
+    type: 'user',
+    text: 'Perfect, thank you!'
+  },
+  {
+    type: 'agent',
+    text: "All set, Sarah! Here's your summary:\n\n📅 Wednesday, May 20th at 2:00 PM\n👩‍⚕️ Dr. Chen — Main Clinic, Room 4\n💉 Botox Consultation\n💰 Estimated copay: $45\n📧 Confirmation sent to s.miller@email.com\n\nText CONFIRM to verify this appointment or REPLY with any changes. Is there anything else I can help with?"
+  }
+];
+
+let step = 0;
+const chat = document.getElementById('chat');
+const input = document.getElementById('userInput');
+const cta = document.getElementById('cta');
+
+function addMessage(msg) {
+  const div = document.createElement('div');
+  div.className = `message ${msg.type}`;
+
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar';
+  avatar.textContent = msg.type === 'agent' ? 'IA' : 'S';
+
+  const wrapper = document.createElement('div');
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = msg.text.replace(/\n/g, '<br>');
+
+  wrapper.appendChild(bubble);
+
+  if (msg.tool) {
+    const toolDiv = document.createElement('div');
+    toolDiv.className = 'tool-use';
+    toolDiv.innerHTML = `
+      <div class="tool-name">${msg.tool.name}</div>
+      <div class="tool-params">${msg.tool.params}</div>
+      <div class="tool-result">→ ${msg.tool.result}</div>
+    `;
+    wrapper.appendChild(toolDiv);
+  }
+
+  div.appendChild(avatar);
+  div.appendChild(wrapper);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function sendMessage() {
+  const text = input.value.trim();
+  if (!text || step >= DEMO_FLOW.length) return;
+  input.value = '';
+
+  // Add user message
+  const userMsg = { type: 'user', text };
+  addMessage(userMsg);
+
+  // Show next agent response after a brief delay
+  if (step < DEMO_FLOW.length) {
+    const next = DEMO_FLOW[step];
+    setTimeout(() => {
+      addMessage(next);
+      step++;
+      if (step >= DEMO_FLOW.length) {
+        cta.style.display = 'block';
+      }
+    }, 800 + Math.random() * 600);
+  }
+}
+
+// Initial state — show first user message as placeholder prompt
+setTimeout(() => {
+  input.placeholder = 'Try typing: "Hi, I want to book a Botox consultation for next week."';
+}, 500);
+
+// Enter key to send
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+// Pre-populate suggestions
+console.log('💡 Try typing: "Hi, I want to book a Botox consultation for next week."');
+console.log('🔧 Watch the agent use tools: check_calendar_availability → lookup_patient → book_appointment');
+console.log('📊 Dashboard updates in real-time on the right panel');
+</script>
+
+</body>
+</html>

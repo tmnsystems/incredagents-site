@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/demo", "destination": "/demo.html" },
+    { "source": "/demo-medspa", "destination": "/demo-medspa.html" },
+    { "source": "/demo-realestate", "destination": "/demo-realestate.html" },
+    { "source": "/demo-dental", "destination": "/demo-dental.html" },
+    { "source": "/demo-legal", "destination": "/demo-legal.html" }
+  ]
+}
